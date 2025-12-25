@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Loader</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+</head>
+<body>
+    <h2 id="msg">데이터를 불러오는 중입니다...</h2>
+
+    <script>
+        // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+        // 아까 복사한 [구글 시트 CSV 링크]를 따옴표 안에 넣어라!
+        const SHEET_URL = "file:///G:/%EB%82%B4%20%EB%https://docs.google.https://docs.google.com/spreadsheets/d/1r9iX8UkFAYec8u6S8oWZ92Rz7Hdn6MzJ8E_JnxcHROc/edit?usp=sharing/spreadsheets/d/1r9iX8UkFAYec8u6S8oWZ92Rz7Hdn6MzJ8E_JnxcHROc/edit?usp=sharing://docs.google.com/spreadsheets/d/1r9iX8UkFAYec8u6S8oWZ92Rz7Hdn6MzJ8E_JnxcHROc/edit?gid=0#gid=0%9C%EB%9D%BC%EC%9D%B4%EB%B8%8C/CODE_2025/ForFun/web-project/index.html"; 
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+        // 주소창에서 ?id=값 가져오기
+        const params = new URLSearchParams(window.location.search);
+        const targetId = params.get('id');
+
+        if (!targetId) {
+            document.getElementById('msg').innerText = "주소 뒤에 ?id=test 를 붙여서 접속해주세요.";
+        } else {
+            // 구글 시트 데이터 가져오기
+            Papa.parse(SHEET_URL, {
+                download: true,
+                header: true, // 첫 줄(id, html)을 제목으로 인식
+                complete: function(results) {
+                    // id가 일치하는 행 찾기
+                    const data = results.data;
+                    const found = data.find(row => row.id === targetId);
+
+                    if (found && found.html) {
+                        // 찾았으면 화면을 싹 지우고 친구의 HTML로 덮어쓰기
+                        document.open();
+                        document.write(found.html);
+                        document.close();
+                    } else {
+                        document.getElementById('msg').innerText = "해당 ID(" + targetId + ")의 코드가 시트에 없습니다.";
+                    }
+                },
+                error: function() {
+                    document.getElementById('msg').innerText = "구글 시트 연결 실패. 링크를 확인하세요.";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
