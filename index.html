@@ -3,45 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Loader</title>
+    <title>Magic Page Loader</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; background-color: #111; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #msg { text-align: center; line-height: 1.6; }
+    </style>
 </head>
 <body>
-    <h2 id="msg">데이터를 불러오는 중입니다...</h2>
+    <div id="msg">
+        <h2>데이터를 불러오는 중입니다...</h2>
+        <p style="font-size: 0.8rem; color: #888;">잠시만 기다려주세요.</p>
+    </div>
 
     <script>
-        // ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-        // 아까 복사한 [구글 시트 CSV 링크]를 따옴표 안에 넣어라!
+        // 네가 제공한 구글 시트 CSV 링크 (그대로 두면 됨)
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMlEIGB8fdhMG_z_wOU6K7hqEUfYRqG3tTv8V5ma-lbxi-NYQbzi2Im2HtcN2mBk1ER4FYVY_NAd6t/pub?gid=0&single=true&output=csv"; 
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         // 주소창에서 ?id=값 가져오기
         const params = new URLSearchParams(window.location.search);
         const targetId = params.get('id');
 
         if (!targetId) {
-            document.getElementById('msg').innerText = "주소 뒤에 ?id=test 를 붙여서 접속해주세요.";
+            document.getElementById('msg').innerHTML = "<h1>접속 오류</h1><p>주소 뒤에 <code>?id=이름</code>을 붙여주세요.<br>예: /?id=subway</p>";
         } else {
-            // 구글 시트 데이터 가져오기
             Papa.parse(SHEET_URL, {
                 download: true,
-                header: true, // 첫 줄(id, html)을 제목으로 인식
+                header: true, // 1행(id, raw_code, html)을 제목으로 인식
+                skipEmptyLines: true, // 빈 줄 무시
                 complete: function(results) {
-                    // id가 일치하는 행 찾기
                     const data = results.data;
+                    // id가 일치하는 행 찾기
                     const found = data.find(row => row.id === targetId);
 
-                    if (found && found.html) {
-                        // 찾았으면 화면을 싹 지우고 친구의 HTML로 덮어쓰기
-                        document.open();
-                        document.write(found.html);
-                        document.close();
+                    if (found) {
+                        // C열(html)에 데이터가 있는지 확인
+                        if (found.html && found.html.trim() !== "") {
+                            // 찾았으면 현재 화면을 싹 지우고 변환된 HTML로 덮어쓰기
+                            document.open();
+                            document.write(found.html);
+                            document.close();
+                        } else {
+                            document.getElementById('msg').innerHTML = `
+                                <h2>변환된 코드가 없습니다.</h2>
+                                <p>ID는 찾았지만, 변환된 HTML(C열)이 비어있습니다.<br>
+                                구글 시트에서 <b>[✨ AI 변환기]</b>를 돌려주세요!</p>`;
+                        }
                     } else {
-                        document.getElementById('msg').innerText = "해당 ID(" + targetId + ")의 코드가 시트에 없습니다.";
+                        document.getElementById('msg').innerHTML = `<h2>ID를 찾을 수 없습니다.</h2><p>입력한 ID: <b>${targetId}</b><br>구글 시트 A열에 이 ID가 있는지 확인하세요.</p>`;
                     }
                 },
-                error: function() {
-                    document.getElementById('msg').innerText = "구글 시트 연결 실패. 링크를 확인하세요.";
+                error: function(err) {
+                    console.error(err);
+                    document.getElementById('msg').innerText = "구글 시트 연결 실패. 인터넷 상태나 링크를 확인하세요.";
                 }
             });
         }
