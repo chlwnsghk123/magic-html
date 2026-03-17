@@ -37,17 +37,17 @@
                     const found = data.find(row => row.id === targetId);
 
                     if (found) {
-                        // C열(html)에 데이터가 있는지 확인
-                        if (found.html && found.html.trim() !== "") {
-                            // 찾았으면 현재 화면을 싹 지우고 변환된 HTML로 덮어쓰기
+                        // B열(raw_code)에 데이터가 있는지 확인
+                        if (found.raw_code && found.raw_code.trim() !== "") {
+                            // 찾았으면 현재 화면을 싹 지우고 raw_code로 덮어쓰기
                             document.open();
-                            document.write(found.html);
+                            document.write(found.raw_code);
                             document.close();
                         } else {
                             document.getElementById('msg').innerHTML = `
-                                <h2>변환된 코드가 없습니다.</h2>
-                                <p>ID는 찾았지만, 변환된 HTML(C열)이 비어있습니다.<br>
-                                구글 시트에서 <b>[🚀 사이트 배포 버튼]</b>를 돌려주세요!</p>`;
+                                <h2>코드가 없습니다.</h2>
+                                <p>ID는 찾았지만, 코드(B열)가 비어있습니다.<br>
+                                구글 시트 B열에 코드를 입력해주세요!</p>`;
                         }
                     } else {
                         document.getElementById('msg').innerHTML = `<h2>ID를 찾을 수 없습니다.</h2><p>입력한 ID: <b>${targetId}</b><br>구글 시트 A열에 이 ID가 있는지 확인하세요.</p>`;
