@@ -29,7 +29,7 @@
         } else {
             Papa.parse(SHEET_URL, {
                 download: true,
-                header: true, // 1행(id, raw_code, html)을 제목으로 인식
+                header: true, // 1행(id, my_code, html)을 제목으로 인식
                 skipEmptyLines: true, // 빈 줄 무시
                 complete: function(results) {
                     const data = results.data;
@@ -37,11 +37,11 @@
                     const found = data.find(row => row.id === targetId);
 
                     if (found) {
-                        // B열(raw_code)에 데이터가 있는지 확인
-                        if (found.raw_code && found.raw_code.trim() !== "") {
-                            // 찾았으면 현재 화면을 싹 지우고 raw_code로 덮어쓰기
+                        // B열(my_code)에 데이터가 있는지 확인
+                        if (found.my_code && found.my_code.trim() !== "") {
+                            // 찾았으면 현재 화면을 싹 지우고 my_code로 덮어쓰기
                             document.open();
-                            document.write(found.raw_code);
+                            document.write(found.my_code);
                             document.close();
                         } else {
                             document.getElementById('msg').innerHTML = `
