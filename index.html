@@ -17,10 +17,8 @@
     </div>
 
     <script>
-        // 네가 제공한 구글 시트 CSV 링크 (그대로 두면 됨)
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMlEIGB8fdhMG_z_wOU6K7hqEUfYRqG3tTv8V5ma-lbxi-NYQbzi2Im2HtcN2mBk1ER4FYVY_NAd6t/pub?gid=0&single=true&output=csv"; 
 
-        // 주소창에서 ?id=값 가져오기
         const params = new URLSearchParams(window.location.search);
         const targetId = params.get('id');
 
@@ -29,25 +27,27 @@
         } else {
             Papa.parse(SHEET_URL, {
                 download: true,
-                header: true, // 1행(id, my_code, html)을 제목으로 인식
-                skipEmptyLines: true, // 빈 줄 무시
+                header: false, // 배열 형태로 데이터를 받기 위해 false로 설정
+                skipEmptyLines: true,
                 complete: function(results) {
                     const data = results.data;
-                    // id가 일치하는 행 찾기
-                    const found = data.find(row => row.id === targetId);
+                    
+                    // data[0]은 헤더이므로 slice(1)로 제외한 뒤, A열(인덱스 0)이 targetId와 일치하는 행 탐색
+                    const found = data.slice(1).find(row => row[0] === targetId);
 
                     if (found) {
-                        // B열(my_code)에 데이터가 있는지 확인
-                        if (found.my_code && found.my_code.trim() !== "") {
-                            // 찾았으면 현재 화면을 싹 지우고 my_code로 덮어쓰기
+                        // B열(인덱스 1)부터 끝까지 자른 후, 빈 셀 제거 및 문자열 병합
+                        const combinedHtml = found.slice(1).filter(Boolean).join('');
+
+                        if (combinedHtml.trim() !== "") {
                             document.open();
-                            document.write(found.my_code);
+                            document.write(combinedHtml);
                             document.close();
                         } else {
                             document.getElementById('msg').innerHTML = `
                                 <h2>코드가 없습니다.</h2>
-                                <p>ID는 찾았지만, 코드(B열)가 비어있습니다.<br>
-                                구글 시트 B열에 코드를 입력해주세요!</p>`;
+                                <p>ID는 찾았지만, 코드 영역(B열 이후)이 비어있습니다.<br>
+                                구글 시트에 코드를 입력해주세요.</p>`;
                         }
                     } else {
                         document.getElementById('msg').innerHTML = `<h2>ID를 찾을 수 없습니다.</h2><p>입력한 ID: <b>${targetId}</b><br>구글 시트 A열에 이 ID가 있는지 확인하세요.</p>`;
